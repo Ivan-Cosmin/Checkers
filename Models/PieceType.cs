@@ -1,6 +1,6 @@
 ﻿namespace Checkers.ViewModels
 {
-    public enum CheckerTypes
+    public enum PieceType
     {
         None,
         WhitePawn,

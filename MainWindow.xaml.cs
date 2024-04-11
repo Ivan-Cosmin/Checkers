@@ -12,6 +12,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Checkers.ViewModels;
 
 namespace Checkers
 {
@@ -23,6 +24,7 @@ namespace Checkers
         public MainWindow()
         {
             InitializeComponent();
+            GameVM gameVM = new GameVM();
         }
     }
 }

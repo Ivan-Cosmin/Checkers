@@ -3,106 +3,56 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:local="clr-namespace:Checkers"
+        xmlns:vm="clr-namespace:Checkers.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="650" Width="800" ResizeMode="NoResize">
+        Title="MainWindow" Height="750" Width="800" ResizeMode="NoResize">
+    <Window.DataContext>
+        <vm:GameVM/>
+    </Window.DataContext>
+
     <Grid>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition/>
-            <ColumnDefinition Width="8*"/>
-            <ColumnDefinition/>
-        </Grid.ColumnDefinitions>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="84*"/>
-            <RowDefinition Height="519*"/>
-            <RowDefinition Height="31*"/>
-        </Grid.RowDefinitions>
         <ItemsControl
-            ItemsSource="{Binding GameStatus.Cells}" 
-            Background="BurlyWood"
-            BorderThickness="4"
-            BorderBrush="Black" Height="503" VerticalAlignment="Center" HorizontalAlignment="Center" Width="568" Grid.Column="1" Grid.Row="1"
-            >
-            <ItemsControl.ItemsPanel>
-                <ItemsPanelTemplate>
-                    <UniformGrid Rows="8" Columns="8"/>
-                </ItemsPanelTemplate>
-            </ItemsControl.ItemsPanel>
+       ItemsSource="{Binding GameBoard}">
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
-                    <Button Command="{Binding DataContext.ClickCellCommand, RelativeSource={RelativeSource AncestorType={x:Type ItemsControl}}}"
-                        CommandParameter="{Binding}">
-                        <Button.Template>
-                            <ControlTemplate>
-                                <Border Width="65"
-                                    Height="65"
-                                        BorderBrush="White"
-                                        >
-                                    <ContentControl>
-                                        <ContentControl.Style>
-                                            <Style TargetType="{x:Type ContentControl}">
-                                                <Style.Triggers>
-                                                    <DataTrigger Binding="{Binding Content}" Value="WhitePawn">
-                                                        <Setter Property="Content">
-                                                            <Setter.Value>
-                                                                <Ellipse Fill="Brown"
-                                                                    Width="35"
-                                                                    Height="35"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"
-                                                                    />
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
+                    <ItemsControl
+                   ItemsSource="{Binding}">
 
-                                                    <DataTrigger Binding="{Binding Content}" Value="BlackPawn">
-                                                        <Setter Property="Content">
-                                                            <Setter.Value>
-                                                                <Ellipse Fill="Black"
-                                                                    Width="35"
-                                                                    Height="35"
-                                                                    HorizontalAlignment="Center"
-                                                                    VerticalAlignment="Center"
-                                                                />
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <StackPanel Orientation="Horizontal"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
 
-                                                    <DataTrigger Binding="{Binding Content}" Value="BlackKing">
-                                                        <Setter Property="Content">
-                                                            <Setter.Value>
-                                                                <Canvas Width="100" Height="100" Margin="3 0 0 0">
-                                                                    <Ellipse Fill="Black" Width="35" Height="35" Canvas.Left="12.5" Canvas.Top="13"/>
-                                                                    <Polygon Fill="Gold" Points="32.5,20 47.5,20 40,5"/>
-                                                                    <Polygon Fill="Gold" Points="22.5,20 37.5,20 30,5"/>
-                                                                    <Polygon Fill="Gold" Points="12.5,20 27.5,20 20,5"/>
-                                                                </Canvas>
-
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
-
-                                                    <DataTrigger Binding="{Binding Content}" Value="WhiteKing">
-                                                        <Setter Property="Content">
-                                                            <Setter.Value>
-                                                                <Canvas Width="100" Height="100" Margin="3 0 0 0">
-                                                                    <Ellipse Fill="Brown" Width="35" Height="35" Canvas.Left="12.5" Canvas.Top="13"/>
-                                                                    <Polygon Fill="Gold" Points="32.5,20 47.5,20 40,5"/>
-                                                                    <Polygon Fill="Gold" Points="22.5,20 37.5,20 30,5"/>
-                                                                    <Polygon Fill="Gold" Points="12.5,20 27.5,20 20,5"/>
-                                                                </Canvas>
-                                                            </Setter.Value>
-                                                        </Setter>
-                                                    </DataTrigger>
-                    
-                                                </Style.Triggers>
-                                            </Style>
-                                        </ContentControl.Style>
-                                    </ContentControl>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border
+                                       Height="80"
+                                       Width="80"
+                                       BorderThickness="1"
+                                       BorderBrush="{Binding CellBorderColor}">
+                                    <Button
+                                           Command="{Binding OnClickCommand}"
+                                           CommandParameter="{Binding}"
+                                           >
+                                        <Button.Template>
+                                            <ControlTemplate>
+                                                <Grid>
+                                                    <Image 
+                                                           Source="{Binding Path=BackgroundImage}"
+                                                           Stretch="UniformToFill"/>
+                                                    <Image
+                                                           Source="{Binding Path=PieceImage}"
+                                                           Stretch="UniformToFill"/>
+                                                </Grid>
+                                            </ControlTemplate>
+                                        </Button.Template>
+                                    </Button>
                                 </Border>
-                            </ControlTemplate>
-                        </Button.Template>
-                    </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+
+                    </ItemsControl>
                 </DataTemplate>
             </ItemsControl.ItemTemplate>
         </ItemsControl>
