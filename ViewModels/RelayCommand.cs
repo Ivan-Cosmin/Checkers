@@ -5,53 +5,39 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 
-namespace MVVMPairs.Commands
+namespace Commands
 {
-    class RelayCommand<T> : ICommand
+    internal class RelayCommand : ICommand
     {
-        private Action<T> commandTask;
-        private Predicate<T> canExecuteTask;
-
-        public RelayCommand(Action<T> workToDo, Predicate<T> canExecute)
-        {
-            commandTask = workToDo;
-            canExecuteTask = canExecute;
-        }
-
-        public RelayCommand(Action<T> workToDo)
-            : this(workToDo, DefaultCanExecute)
-        {
-            commandTask = workToDo;
-        }
-
-        private static bool DefaultCanExecute(T parameter)
-        {
-            return true;
-        }
-
-        public bool CanExecute(object parameter)
-        {
-            return canExecuteTask != null && canExecuteTask((T)parameter);
-        }
+        private readonly Action<object> execute;
+        private readonly Func<object, bool> canExecute;
 
         public event EventHandler CanExecuteChanged
         {
             add
             {
-                //+=asociaza un handler la un eveniment
                 CommandManager.RequerySuggested += value;
             }
-
             remove
             {
-                //-=sterge un handler de la un eveniment
                 CommandManager.RequerySuggested -= value;
             }
         }
 
+        public RelayCommand(Action<object> execute, Func<object, bool> canExecute = null)
+        {
+            this.execute = execute;
+            this.canExecute = canExecute;
+        }
+
+        public bool CanExecute(object parameter)
+        {
+            return canExecute == null || canExecute(parameter);
+        }
+
         public void Execute(object parameter)
         {
-            commandTask((T)parameter);
+            execute(parameter);
         }
     }
 }

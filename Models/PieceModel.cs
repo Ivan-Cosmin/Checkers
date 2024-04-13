@@ -9,6 +9,9 @@ namespace Checkers.Models
 {
     internal class PieceModel
     {
+        public PieceModel()
+        {
+        }
         public PieceModel(int x, int y, PieceType type)
         {
             X = x;
@@ -18,7 +21,6 @@ namespace Checkers.Models
 
         public int X { get; set; }
         public int Y { get; set; }
-        public bool IsKing { get; set; }
         public PieceType Type { get; set; }
 
     }
