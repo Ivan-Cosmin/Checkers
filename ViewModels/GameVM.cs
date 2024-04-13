@@ -105,7 +105,7 @@ namespace Checkers.ViewModels
             }
             else
             {
-                if(SelectedPiece == null)
+                if(SelectedPiece == null && _game.SelectPiece(currentPiece))
                 {
                     SelectedPiece = clickedCell;
                     SelectedPiece.CellBorderColor = _selectedPieceColor;
@@ -115,19 +115,10 @@ namespace Checkers.ViewModels
             }
         }
 
-        //Move piece to new position
         private void MovePiece(PieceModel Piece, Tuple<int, int> Pos)
         {
-            //Move piece to new position
-            if (SelectedPiece != null)
-            {
-                if (_game.GetPiece(SelectedPiece.X, SelectedPiece.Y).Type == PieceType.BlackPawn)
-                    _game.MoveUpPiece(Piece, Pos);
-                else
-                    if (_game.GetPiece(SelectedPiece.X, SelectedPiece.Y).Type == PieceType.WhitePawn)
-                    _game.MoveDownPiece(Piece, Pos);
-            }
-            UpdateBoard();
+            if (SelectedPiece != null && _game.MovePiece(Piece, Pos))
+                UpdateBoard();
         }
 
         private void ResetSelectedPiece()
