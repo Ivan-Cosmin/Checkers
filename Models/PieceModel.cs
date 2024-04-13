@@ -23,5 +23,19 @@ namespace Checkers.Models
         public int Y { get; set; }
         public PieceType Type { get; set; }
 
+        public bool IsKing()
+        {
+            if (Type == PieceType.WhiteKing || Type == PieceType.BlackKing)
+                return true;
+            return false;
+        }
+        public void ChangeInKing()
+        {
+            if (Type == PieceType.WhitePawn)
+                Type = PieceType.WhiteKing;
+
+            if (Type == PieceType.BlackPawn)
+                Type = PieceType.BlackKing;
+        }
     }
 }

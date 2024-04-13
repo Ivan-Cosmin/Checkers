@@ -28,7 +28,9 @@ namespace Checkers.ViewModels
         private readonly string _whiteSquareImagePath = "..\\..\\Resources\\Images\\white_square.jpg";
         private readonly string _blackSquareImagePath = "..\\..\\Resources\\Images\\black_square.jpg";
         private readonly string _whitePawnImagePath = "..\\..\\Resources\\Images\\white_pawn.png";
-        private readonly string _redPawnImagePath = "..\\..\\Resources\\Images\\red_pawn.png";
+        private readonly string _whiteKingImagePath = "..\\..\\Resources\\Images\\white_king.png";
+        private readonly string _blackPawnImagePath = "..\\..\\Resources\\Images\\black_pawn.png";
+        private readonly string _blackKingImagePath = "..\\..\\Resources\\Images\\black_king.png";
         private readonly string _selectedPieceColor = "Red";
 
         
@@ -75,7 +77,15 @@ namespace Checkers.ViewModels
                     }
                     else
                     {
-                        GameBoard[line_index][column_index].PieceImage = GetImage(board[line_index][column_index].Type == PieceType.WhitePawn ? _whitePawnImagePath : _redPawnImagePath);
+                        if (!board[line_index][column_index].IsKing())
+                            GameBoard[line_index][column_index].PieceImage =
+                                GetImage(board[line_index][column_index].Type == PieceType.WhitePawn ?
+                                _whitePawnImagePath : _blackPawnImagePath);
+                        else
+                        if (board[line_index][column_index].IsKing())
+                            GameBoard[line_index][column_index].PieceImage = 
+                                GetImage(board[line_index][column_index].Type == PieceType.WhiteKing ?
+                                _whiteKingImagePath : _blackKingImagePath);
                     }
                 }
             }
@@ -118,7 +128,9 @@ namespace Checkers.ViewModels
         private void MovePiece(PieceModel Piece, Tuple<int, int> Pos)
         {
             if (SelectedPiece != null && _game.MovePiece(Piece, Pos))
+            {
                 UpdateBoard();
+            }
         }
 
         private void ResetSelectedPiece()

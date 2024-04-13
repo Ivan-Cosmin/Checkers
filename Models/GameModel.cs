@@ -71,6 +71,10 @@ namespace Checkers.Models
             if (Piece == null)
                 return false;
 
+            //0 begin, 7 end of the board
+            if(!Piece.IsKing() && (Pos.Item1 == 0 || Pos.Item1 == 7))
+                Piece.ChangeInKing();
+
             if (Piece.Type == PieceType.WhitePawn)
             {
                 MoveDownPiece(Piece, Pos);
@@ -83,7 +87,7 @@ namespace Checkers.Models
                 return true;
             }
 
-            if (Piece.Type == PieceType.WhiteKing || Piece.Type == PieceType.BlackKing)
+            if (Piece.IsKing())
             {
                 MoveUpPiece(Piece, Pos);
                 MoveDownPiece(Piece, Pos);
