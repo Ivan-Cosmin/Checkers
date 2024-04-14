@@ -43,6 +43,7 @@ namespace Checkers.Models
         #region Properties and Members
 
         private List<List<PieceModel>> _board;
+        private bool _multipleJump = true;
         private static readonly int _boardSize = 8;
 
         public List<List<PieceModel>> Board
@@ -66,7 +67,7 @@ namespace Checkers.Models
 
         #region Methods
 
-        public bool MovePiece(PieceModel Piece , Tuple<int, int> Pos)
+        public bool MovePiece(ref PieceModel Piece , ref Tuple<int, int> Pos)
         {
             if (Piece == null)
                 return false;
@@ -77,20 +78,20 @@ namespace Checkers.Models
 
             if (Piece.Type == PieceType.WhitePawn)
             {
-                MoveDownPiece(Piece, Pos);
+                MoveDownPiece(ref Piece, ref Pos);
                 return true;
             }
 
             if (Piece.Type == PieceType.BlackPawn)
             {
-                MoveUpPiece(Piece, Pos);
+                MoveUpPiece(ref Piece, ref Pos);
                 return true;
             }
 
             if (Piece.IsKing())
             {
-                MoveUpPiece(Piece, Pos);
-                MoveDownPiece(Piece, Pos);
+                MoveUpPiece(ref Piece, ref Pos);
+                MoveDownPiece(ref Piece, ref Pos);
                 return true;
             }
 
@@ -98,8 +99,13 @@ namespace Checkers.Models
         }
         private void MovePiece(int x1, int y1, int x2, int y2)
         {
-            _board[x2][y2] = new PieceModel(x2, y2, _board[x1][y1].Type);
+            PieceModel Piece = new PieceModel(x2, y2, _board[x1][y1].Type);
+            _board[x2][y2] = Piece;
             _board[x1][y1] = null;
+            if (_multipleJump && Math.Abs(x1-x2) == 2 && HasChangeToJump(ref Piece))
+            { 
+                return;
+            }
             ChangeTurn();
         }
 
@@ -108,8 +114,11 @@ namespace Checkers.Models
             return _board[x][y];
         }
 
-        private bool IsEnemy(PieceModel Piece, PieceModel EnemyPiece)
+        private bool IsEnemy(ref PieceModel Piece, PieceModel EnemyPiece)
         {
+            if (EnemyPiece == null)
+                return false;
+
             if((Piece.Type == PieceType.WhitePawn || Piece.Type == PieceType.WhiteKing) &&
           (EnemyPiece.Type == PieceType.BlackPawn || EnemyPiece.Type == PieceType.BlackKing))
                 return true;
@@ -121,44 +130,123 @@ namespace Checkers.Models
             return false;
         }
 
-        public void MoveUpPiece(PieceModel Piece, Tuple<int, int> Pos)
+        private int CanMoveUp(ref PieceModel Piece, Tuple<int, int> Pos)
         {
             int diffX = Piece.X - Pos.Item1;
             int diffY = Piece.Y - Pos.Item2;
             if (diffX == 1 && (diffY == -1 || diffY == 1))
-                MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
+                return 1;
             else
-                if (diffX == 2 && (diffY == -2 || diffY == 2))
-            {
-                if(RemoveEnemyPiece(Piece, Pos))
-                    MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
-            }
+            if (diffX == 2 && (diffY == -2 || diffY == 2))
+                return 2;
+            return 0;
         }
-
-        public void MoveDownPiece(PieceModel Piece, Tuple<int, int> Pos)
+        private int CanMoveDown(ref PieceModel Piece, ref Tuple<int, int> Pos)
         {
             int diffX = Piece.X - Pos.Item1;
             int diffY = Piece.Y - Pos.Item2;
             if (diffX == -1 && (diffY == -1 || diffY == 1))
+                return 1;
+            else
+            if (diffX == -2 && (diffY == -2 || diffY == 2))
+                return 2;
+            return 0;
+        }
+        public void MoveUpPiece(ref PieceModel Piece, ref Tuple<int, int> Pos)
+        {
+            int howManySquare = CanMoveUp(ref Piece, Pos);
+            if (howManySquare == 1)
                 MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
             else
-                if (diffX == -2 && (diffY == -2 || diffY == 2))
-            {
-                if(RemoveEnemyPiece(Piece, Pos))
-                    MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
-            }
+                if (howManySquare == 2)
+                    if (RemoveEnemyPiece(ref Piece, ref Pos))
+                        MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
+                
         }
+        public void MoveDownPiece(ref PieceModel Piece, ref Tuple<int, int> Pos)
+        {
+            int howManySquare = CanMoveDown(ref Piece, ref Pos);
+            if (howManySquare == 1)
+                MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
+            else
+                if (howManySquare == 2)
+                    if (RemoveEnemyPiece(ref Piece, ref Pos))
+                        MovePiece(Piece.X, Piece.Y, Pos.Item1, Pos.Item2);
 
-        private bool RemoveEnemyPiece(PieceModel Piece, Tuple<int, int> Pos)
+        }
+        private bool RemoveEnemyPiece(ref PieceModel Piece, ref Tuple<int, int> Pos)
         {
             int PossibleEnemyPosX = (Piece.X + Pos.Item1) / 2;
             int PossibleEnemyPosY = (Piece.Y + Pos.Item2) / 2;
 
-            if (_board[PossibleEnemyPosX][PossibleEnemyPosY] != null && IsEnemy(Piece, _board[PossibleEnemyPosX][PossibleEnemyPosY]))
+            if (IsEnemy(ref Piece, _board[PossibleEnemyPosX][PossibleEnemyPosY]))
             {
                 _board[PossibleEnemyPosX][PossibleEnemyPosY] = null;
                 return true;
             }
+            return false;
+        }
+
+        private bool HasChangeToJumpDown(ref PieceModel Piece)
+        {
+            if ( //leftDown
+                    Piece.X + 2 >= 0 && Piece.X + 2 < _boardSize &&
+                    Piece.Y - 2 >= 0 && Piece.Y - 2 < _boardSize &&
+                    _board[Piece.X + 2][Piece.Y - 2] == null &&
+                    IsEnemy(ref Piece, _board[Piece.X + 1][Piece.Y - 1])
+                   )
+                return true;
+
+            if ( //rightDown
+                Piece.X + 2 >= 0 && Piece.X + 2 < _boardSize &&
+                Piece.Y + 2 >= 0 && Piece.Y + 2 < _boardSize &&
+                _board[Piece.X + 2][Piece.Y + 2] == null &&
+                IsEnemy(ref Piece, _board[Piece.X + 1][Piece.Y + 1])
+               )
+                return true;
+            return false;
+        }
+        private bool HasChangeToJumpUp(ref PieceModel Piece)
+        {
+            if ( //leftUp
+                    Piece.X - 2 >= 0 && Piece.X - 2 < _boardSize &&
+                    Piece.Y - 2 >= 0 && Piece.Y - 2 < _boardSize &&
+                    _board[Piece.X - 2][Piece.Y - 2] == null &&
+                    IsEnemy(ref Piece, _board[Piece.X - 1][Piece.Y - 1])
+                   )
+                return true;
+
+            if ( //rightUP
+                Piece.X - 2 >= 0 && Piece.X - 2 < _boardSize &&
+                Piece.Y + 2 >= 0 && Piece.Y + 2 < _boardSize &&
+                _board[Piece.X - 2][Piece.Y + 2] == null &&
+                IsEnemy(ref Piece, _board[Piece.X - 1][Piece.Y + 1])
+               )
+                return true;
+            return false;
+        }
+
+        private bool HasChangeToJump(ref PieceModel Piece)
+        {
+            if (Piece.Type == PieceType.WhitePawn)
+            {
+                if(HasChangeToJumpDown(ref Piece) == true)
+                    return true;
+                return false;
+            }
+            else if (Piece.Type == PieceType.BlackPawn)
+            {
+                if(HasChangeToJumpUp(ref Piece) == true)
+                    return true;
+                return false;
+            }
+            else if(Piece.IsKing())
+            {
+                if(HasChangeToJumpDown(ref Piece) == true || HasChangeToJumpUp(ref Piece) == true)
+                    return true;
+                return false;
+            }
+
             return false;
         }
 

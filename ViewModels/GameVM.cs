@@ -127,7 +127,7 @@ namespace Checkers.ViewModels
 
         private void MovePiece(PieceModel Piece, Tuple<int, int> Pos)
         {
-            if (SelectedPiece != null && _game.MovePiece(Piece, Pos))
+            if (SelectedPiece != null && _game.MovePiece(ref Piece, ref Pos))
             {
                 UpdateBoard();
             }
