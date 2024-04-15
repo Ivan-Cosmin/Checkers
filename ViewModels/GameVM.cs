@@ -17,7 +17,7 @@ namespace Checkers.ViewModels
     {
         public GameVM()
         {
-            _game = new GameModel();
+            _game = new GameModel(false);
             InitBoard();
             UpdateBoard();
         }
@@ -36,6 +36,13 @@ namespace Checkers.ViewModels
         
         // CellBorderColor property
         private SolidColorBrush _cellBorderColor = new SolidColorBrush(Colors.Black);
+        private bool _multipleJump;
+        public bool MultipleJump
+        {
+            get { return _multipleJump; }
+            set { _multipleJump = value; }
+        }
+
         public SolidColorBrush CellBorderColor
         {
             get { return _cellBorderColor; }
@@ -52,13 +59,17 @@ namespace Checkers.ViewModels
                 GameBoard.Add(new ObservableCollection<BoardCellModel>());
                 for (int column_index = 0; column_index < _game.BoardSize; column_index++)
                 {
-                    GameBoard[line_index].Add(new BoardCellModel(ClickCommand));
-                    GameBoard[line_index][column_index].X = line_index;
-                    GameBoard[line_index][column_index].Y = column_index;
-                    GameBoard[line_index][column_index].BackgroundImage = (line_index + column_index) % 2 == 0 ? GetImage(_whiteSquareImagePath): GetImage(_blackSquareImagePath);
-                    GameBoard[line_index][column_index].IsBlack = (line_index + column_index) % 2 == 1;
-                    GameBoard[line_index][column_index].PieceImage = null;
-                    GameBoard[line_index][column_index].CellBorderColor = _normalBorderColor;
+                    BoardCellModel cell = new BoardCellModel(ClickCommand)
+                    { 
+                        X = line_index, 
+                        Y = column_index,
+                        BackgroundImage = (line_index + column_index) % 2 == 0 ? GetImage(_whiteSquareImagePath) : GetImage(_blackSquareImagePath),
+                        IsBlack = (line_index + column_index) % 2 == 1,
+                        PieceImage = null,
+                        CellBorderColor = _normalBorderColor
+                    };
+
+                    GameBoard[line_index].Add(cell);
                 }
             }
         }
@@ -66,29 +77,27 @@ namespace Checkers.ViewModels
         private void UpdateBoard()
         {   
             List<List<PieceModel>> board = _game.Board;
+            int boardSize = _game.BoardSize;
+            ImageSource image = null;
 
-            for (int line_index = 0; line_index < _game.BoardSize; line_index++)
-            {
-                for (int column_index = 0; column_index < _game.BoardSize; column_index++)
+            for (int line_index = 0; line_index < boardSize; line_index++)
+                for (int column_index = 0; column_index < boardSize; column_index++)
                 {
-                    if (board[line_index][ column_index] == null)
-                    {
-                        GameBoard[line_index][column_index].PieceImage = null;
-                    }
-                    else
-                    {
-                        if (!board[line_index][column_index].IsKing())
-                            GameBoard[line_index][column_index].PieceImage =
-                                GetImage(board[line_index][column_index].Type == PieceType.WhitePawn ?
-                                _whitePawnImagePath : _blackPawnImagePath);
-                        else
-                        if (board[line_index][column_index].IsKing())
-                            GameBoard[line_index][column_index].PieceImage = 
-                                GetImage(board[line_index][column_index].Type == PieceType.WhiteKing ?
-                                _whiteKingImagePath : _blackKingImagePath);
-                    }
+                    PieceModel piece = board[line_index][column_index];
+
+                    if (piece == null)
+                        image = null;
+
+                    else if (!piece.IsKing())
+                       image = GetImage(piece.Type == PieceType.WhitePawn ?
+                            _whitePawnImagePath : _blackPawnImagePath);
+
+                    else if (piece.IsKing())
+                        image = GetImage(piece.Type == PieceType.WhiteKing ?
+                            _whiteKingImagePath : _blackKingImagePath);
+
+                    GameBoard[line_index][column_index].PieceImage = image;
                 }
-            }
         }
 
         private ImageSource GetImage(string imagePath)
@@ -115,22 +124,21 @@ namespace Checkers.ViewModels
             }
             else
             {
-                if(SelectedPiece == null && _game.SelectPiece(currentPiece))
+                if (_game.SelectPiece(currentPiece))
                 {
+                    if(SelectedPiece != null)
+                        ResetSelectedPiece();
+
                     SelectedPiece = clickedCell;
                     SelectedPiece.CellBorderColor = _selectedPieceColor;
                 }
-                else
-                    ResetSelectedPiece();
             }
         }
 
         private void MovePiece(PieceModel Piece, Tuple<int, int> Pos)
         {
-            if (SelectedPiece != null && _game.MovePiece(ref Piece, ref Pos))
-            {
+            if (SelectedPiece != null && _game.MovePiece(Piece, ref Pos))
                 UpdateBoard();
-            }
         }
 
         private void ResetSelectedPiece()
@@ -141,8 +149,6 @@ namespace Checkers.ViewModels
                 SelectedPiece = null;
             }
         }
-
-
 
     }
 }
