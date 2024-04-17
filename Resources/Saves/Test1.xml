@@ -1,0 +1,22 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Game>
+  <IsWhiteTurn>True</IsWhiteTurn>
+  <MultipleJump>False</MultipleJump>
+  <Board>
+     <Piece>
+      <X>4</X>
+      <Y>3</Y>
+      <Type>WhitePawn</Type>
+    </Piece>
+    <Piece>
+      <X>5</X>
+      <Y>0</Y>
+      <Type>BlackPawn</Type>
+    </Piece>
+    <Piece>
+      <X>6</X>
+      <Y>5</Y>
+      <Type>BlackPawn</Type>
+    </Piece>
+  </Board>
+</Game>

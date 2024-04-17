@@ -1,15 +1,19 @@
 ﻿using Checkers.ViewModels;
+using Microsoft.Win32;
 using Models;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Windows;
+using System.Xml;
 
 namespace Checkers.Models
 {
-    internal class GameModel
+    internal class GameModel : BaseNotification
     {
         public GameModel(bool MultipleJump)
         {
@@ -40,13 +44,25 @@ namespace Checkers.Models
                         _board[line_index].Add(null);
                 }
             }
+            _isWhiteTurn = false;
+            MatchStarted = false;
+        }
+        public GameModel(bool MultipleJump, List<List<PieceModel>> board, bool isWhiteTurn)
+        {
+            _board = board;
+            _multipleJump = MultipleJump;
+            _isWhiteTurn = isWhiteTurn;
+            MatchStarted = true;
         }
 
         #region Properties and Members
         private List<List<PieceModel>> _board;
         private bool _multipleJump;
-        public static bool _isWhiteTurn = false;
+        private static bool _isWhiteTurn;
+        private static int _whiteCount;
+        private static int _blackCount;
         private static readonly int _boardSize = 8;
+        public bool MatchStarted;
 
         public List<List<PieceModel>> Board
         {
@@ -61,6 +77,21 @@ namespace Checkers.Models
             get { return _isWhiteTurn; }
             set { _isWhiteTurn = value; }
         }
+        public bool MultipleJump
+        {
+            get { return _multipleJump; }
+            set { _multipleJump = value;}
+        }
+        public int WhiteCount
+        {
+            get { return _whiteCount; }
+            set { _whiteCount = value; }
+        }
+        public int BlackCount
+        {
+            get { return _blackCount; }
+            set { _blackCount = value; }
+        }
         #endregion
 
         #region Methods
@@ -71,7 +102,9 @@ namespace Checkers.Models
                 return false;
 
             //0 begin, 7 end of the board
-            if(!Piece.IsKing() && (Pos.Item1 == 0 || Pos.Item1 == 7))
+            if(!Piece.IsKing() && 
+              ((Piece.Type == PieceType.BlackPawn && Pos.Item1 == 0) ||
+               (Piece.Type == PieceType.WhitePawn && Pos.Item1 == 7)))
                 Piece.ChangeInKing();
 
             if (Piece.Type == PieceType.WhitePawn)
@@ -100,19 +133,51 @@ namespace Checkers.Models
             PieceModel Piece = new PieceModel(x2, y2, _board[x1][y1].Type);
             _board[x2][y2] = Piece;
             _board[x1][y1] = null;
-            if (_multipleJump && Math.Abs(x1-x2) == 2 && HasChangeToJump( Piece))
+            if (_multipleJump && Math.Abs(x1-x2) == 2 && HasChangeToJump2Square(Piece))
             { 
                 return;
             }
             ChangeTurn();
+
         }
+
+        public Tuple<string, int> Winner()
+        {
+            if(_whiteCount == 0 || (_isWhiteTurn && HasNoMove() == true))
+                return new Tuple<string, int>("black" ,_blackCount); //black win
+            else
+            if(_blackCount == 0 || (!_isWhiteTurn && HasNoMove() == true))
+                return new Tuple<string, int> ("white" , _whiteCount); //white win
+            return null;
+        }
+
         public PieceModel GetPiece(int x, int y)
         {
             return _board[x][y];
         }
 
-
         #region Boolean Methods
+        private bool HasNoMove()
+        {
+            foreach (List<PieceModel> line in _board)
+                foreach (PieceModel piece in line)
+                {
+                    if (piece == null)
+                        continue;
+                   if(_isWhiteTurn && (piece.Type == PieceType.WhitePawn || piece.Type == PieceType.WhiteKing))
+                    {
+                        if (HasChangeToJump2Square(piece) == true || HasChangeToJump1Square(piece) == true)
+                            return false;
+                    }
+                    else
+                    if(!_isWhiteTurn && (piece.Type == PieceType.BlackPawn || piece.Type == PieceType.BlackKing))
+                    {
+                        if (HasChangeToJump2Square(piece) == true || HasChangeToJump1Square(piece) == true)
+                            return false;
+                    }
+                }
+            return true;
+        }
         private int CanMoveUp(PieceModel Piece, ref Tuple<int, int> Pos)
         {
             int diffX = Piece.X - Pos.Item1;
@@ -135,7 +200,62 @@ namespace Checkers.Models
                 return 2;
             return 0;
         }
-        private bool HasChangeToJumpDown( PieceModel Piece)
+        private bool HasChangeToJump1Square(PieceModel Piece)
+        {
+            if (Piece.Type == PieceType.WhitePawn)
+            {
+                if (HasChangeToJumpDown1Square(Piece) == true)
+                    return true;
+            }
+            else if (Piece.Type == PieceType.BlackPawn)
+            {
+                if (HasChangeToJumpUp1Square(Piece) == true)
+                    return true;
+            }
+            else if (Piece.IsKing())
+            {
+                if (HasChangeToJumpDown1Square(Piece) == true || HasChangeToJumpUp1Square(Piece) == true)
+                    return true;
+            }
+
+            return false;
+        }
+        private bool HasChangeToJumpUp1Square(PieceModel Piece)
+        {
+            if ( //leftUp
+                    Piece.X - 1 >= 0 && Piece.X - 1 < _boardSize &&
+                    Piece.Y - 1 >= 0 && Piece.Y - 1 < _boardSize &&
+                    _board[Piece.X - 1][Piece.Y - 1] == null
+                   )
+                return true;
+
+            if ( //rightUP
+                Piece.X - 1 >= 0 && Piece.X - 1 < _boardSize &&
+                Piece.Y + 1 >= 0 && Piece.Y + 1 < _boardSize &&
+                _board[Piece.X - 1][Piece.Y + 1] == null
+               )
+                return true;
+
+            return false;
+        }
+        private bool HasChangeToJumpDown1Square(PieceModel Piece)
+        {
+            if ( //leftDown
+                     Piece.X + 1 >= 0 && Piece.X + 1 < _boardSize &&
+                     Piece.Y - 1 >= 0 && Piece.Y - 1 < _boardSize &&
+                     _board[Piece.X + 1][Piece.Y - 1] == null
+                    )
+                return true;
+
+            if ( //rightDown
+                Piece.X + 1 >= 0 && Piece.X + 1 < _boardSize &&
+                Piece.Y + 1 >= 0 && Piece.Y + 1 < _boardSize &&
+                _board[Piece.X + 1][Piece.Y + 1] == null
+               )
+                return true;
+            return false;
+        }
+        private bool HasChangeToJumpDown2Square( PieceModel Piece)
         {
             if ( //leftDown
                     Piece.X + 2 >= 0 && Piece.X + 2 < _boardSize &&
@@ -154,7 +274,7 @@ namespace Checkers.Models
                 return true;
             return false;
         }
-        private bool HasChangeToJumpUp(PieceModel Piece)
+        private bool HasChangeToJumpUp2Square(PieceModel Piece)
         {
             if ( //leftUp
                     Piece.X - 2 >= 0 && Piece.X - 2 < _boardSize &&
@@ -173,25 +293,22 @@ namespace Checkers.Models
                 return true;
             return false;
         }
-        private bool HasChangeToJump(PieceModel Piece)
+        private bool HasChangeToJump2Square(PieceModel Piece)
         {
             if (Piece.Type == PieceType.WhitePawn)
             {
-                if(HasChangeToJumpDown( Piece) == true)
+                if(HasChangeToJumpDown2Square( Piece) == true)
                     return true;
-                return false;
             }
             else if (Piece.Type == PieceType.BlackPawn)
             {
-                if(HasChangeToJumpUp( Piece) == true)
+                if(HasChangeToJumpUp2Square( Piece) == true)
                     return true;
-                return false;
             }
             else if(Piece.IsKing())
             {
-                if(HasChangeToJumpDown( Piece) == true || HasChangeToJumpUp( Piece) == true)
+                if(HasChangeToJumpDown2Square( Piece) == true || HasChangeToJumpUp2Square( Piece) == true)
                     return true;
-                return false;
             }
 
             return false;
@@ -204,6 +321,10 @@ namespace Checkers.Models
             if (IsEnemy(Piece, _board[PossibleEnemyPosX][PossibleEnemyPosY]))
             {
                 _board[PossibleEnemyPosX][PossibleEnemyPosY] = null;
+                if (Piece.Type == PieceType.WhitePawn || Piece.Type == PieceType.WhiteKing)
+                    _blackCount--;
+                else
+                    _whiteCount--;
                 return true;
             }
             return false;
@@ -229,7 +350,7 @@ namespace Checkers.Models
                 return false;
 
             if((_isWhiteTurn && (Piece.Type == PieceType.WhitePawn || Piece.Type == PieceType.WhiteKing)) || 
-              (!_isWhiteTurn && (Piece.Type == PieceType.BlackPawn || Piece.Type == PieceType.BlackKing)))
+              (!_isWhiteTurn && (Piece.Type == PieceType.BlackPawn || Piece.Type == PieceType.BlackKing)) && Winner() == null)
                 return true;
             return false;
         }
@@ -260,8 +381,24 @@ namespace Checkers.Models
         private void ChangeTurn()
         {
             _isWhiteTurn = !_isWhiteTurn;
+            if(!MatchStarted)
+                MatchStarted = true;
         }
-
+        public void CounterPieces()
+        {
+            _whiteCount = 0;
+            _blackCount = 0;
+            foreach (List<PieceModel> line in _board)
+                foreach (PieceModel piece in line)
+                {
+                    if (piece == null)
+                        continue;
+                    if (piece.Type == PieceType.WhitePawn || piece.Type == PieceType.WhiteKing)
+                        _whiteCount++;
+                    else
+                        _blackCount++;
+                }
+        }
         #endregion
 
     }

@@ -6,20 +6,74 @@
         xmlns:vm="clr-namespace:Checkers.ViewModels"
         xmlns:local="clr-namespace:Checkers.View"
         mc:Ignorable="d"
-        Title="Chekers" Height="800" Width="1080" ResizeMode="CanResize" Background="#FF939488">
-    
+        Title="Chekers" Height="800" Width="1080" ResizeMode="NoResize">
+
     <Window.DataContext>
         <vm:GameVM/>
     </Window.DataContext>
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="503*"/>
+            <ColumnDefinition Width="37*"/>
+        </Grid.ColumnDefinitions>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="333*"/>
+            <RowDefinition Height="40*"/>
+        </Grid.RowDefinitions>
+
+        <Menu
+            Background="#FF939488" Grid.RowSpan="2" Grid.ColumnSpan="2">
+            <MenuItem Header="File">
+                <MenuItem Header="New Game"
+                 Command="{Binding NewGameCommand}"
+                 />
+                <MenuItem Header="Save"
+                 Command="{Binding SaveGameCommand}"/>
+                <MenuItem Header="Open"
+                 Command="{Binding LoadGameCommand}"/>
+                <MenuItem Header="Allow Multiple Jumps"
+                 IsCheckable="True"
+                 Command="{Binding ToggleMultipleJumps}"
+                 IsChecked="{Binding MultipleJump}"
+                 />
+                <MenuItem Header="Statistics"
+                 Command="{Binding DisplayStatisticsCommand}"
+                 />
+            </MenuItem>
+            <MenuItem Header="Help">
+                <MenuItem Header="About" Command="{Binding DisplayInfoCommand}"/>
+            </MenuItem>
+        </Menu>
+
+        <Label
+          Content="{Binding PlayerTurn}"
+          HorizontalAlignment="Center"
+          VerticalAlignment="Center"
+          FontSize="30" Grid.Row="1"
+          />
+
+        <Label
+        Content="{Binding WhiteCount}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontSize="30" Grid.Column="1" Margin="0,-40,0,0" 
+        />
+
+        <Label
+        Content="{Binding BlackCount}"
+        HorizontalAlignment="Center"
+        VerticalAlignment="Center"
+        FontSize="30" Grid.Column="1" Margin="0,40,0,0" 
+        />
+
         <Border
             BorderThickness="3"
             BorderBrush="Black"
             HorizontalAlignment="Center"
-            VerticalAlignment="Center">
-
+            VerticalAlignment="Center"
+            >
             <ItemsControl
-       ItemsSource="{Binding GameBoard}">
+            ItemsSource="{Binding GameBoard}">
                 <ItemsControl.ItemTemplate>
                     <DataTemplate>
                         <ItemsControl
