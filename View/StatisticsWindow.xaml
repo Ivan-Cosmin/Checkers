@@ -3,10 +3,63 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:vm="clr-namespace:Checkers.ViewModels"
         xmlns:local="clr-namespace:Checkers.View"
         mc:Ignorable="d"
         Title="Statistics" Height="450" Width="800">
-    <Grid>
-        
+    <Window.DataContext>
+        <vm:StatisticsViewModel/>
+    </Window.DataContext>
+
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="Game Statistics"
+               FontSize="20" FontWeight="Bold"
+               HorizontalAlignment="Center"
+               Margin="10"
+               Grid.Row="0"/>
+
+        <StackPanel Grid.Row="1" Margin="10" Orientation="Horizontal">
+            <TextBlock Text="Number of White Games Wins:"
+                   FontSize="16"/>
+            <TextBlock Text="{Binding NumberOfGamesWhite}"
+                   FontSize="16" FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="2" Margin="10" Orientation="Horizontal">
+            <TextBlock Text="Maximum Pieces White:"
+                   FontSize="16"/>
+            <TextBlock Text="{Binding MaxPiecesWonWhite}"
+                   FontSize="16" FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Margin="10" Orientation="Horizontal">
+            <TextBlock Text="Number of Black Games Wins:"
+                   FontSize="16"/>
+            <TextBlock Text="{Binding NumberOfGamesBlack}"
+                   FontSize="16" FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="5,0,0,0"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Margin="10" Orientation="Horizontal">
+            <TextBlock Text="Maximum Pieces Black:"
+                   FontSize="16"/>
+            <TextBlock Text="{Binding MaxPiecesWonBlack}"
+                   FontSize="16" FontWeight="Bold"
+                   HorizontalAlignment="Center"
+                   Margin="5,0,0,0"/>
+        </StackPanel>
     </Grid>
 </Window>

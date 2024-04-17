@@ -57,8 +57,10 @@
     </ApplicationDefinition>
     <Compile Include="Models\GameModel.cs" />
     <Compile Include="Models\PieceModel.cs" />
+    <Compile Include="Services\FileServices.cs" />
     <Compile Include="ViewModels\BaseNotification.cs" />
     <Compile Include="Models\PieceType.cs" />
+    <Compile Include="ViewModels\StatisticsViewModel.cs" />
     <Compile Include="View\AboutWindow.xaml.cs">
       <DependentUpon>AboutWindow.xaml</DependentUpon>
     </Compile>
