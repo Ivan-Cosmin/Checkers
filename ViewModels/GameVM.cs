@@ -34,6 +34,7 @@ namespace Checkers.ViewModels
             _game = game;
             InitBoard();
             UpdateBoard();
+            MultipleJump = _game.MultipleJump;
             _fileServices = new FileServices();
             SaveGameCommand = new RelayCommand(SaveGame);
             LoadGameCommand = new RelayCommand(LoadGame);
